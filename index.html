@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5b3df5">
+<title>Paywave UPI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5fb;--surface:#ffffff;--surface2:#efedf8;--text:#15112b;--muted:#7a7694;--border:#e4e1f1;
+  --brand:#5b3df5;--brand2:#8a4dff;--green:#12b76a;--red:#f04438;
+  --font:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#110e24;--surface:#1a1633;--surface2:#221d42;--text:#f3f1ff;--muted:#9d98c0;--border:#2b2650}
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer}
+svg{display:block}
+
+.app{position:relative;width:100%;max-width:480px;height:100vh;height:100dvh;margin:0 auto;background:var(--bg);overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.screen.active{display:flex}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:120px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.safe-top{padding-top:calc(env(safe-area-inset-top,0px) + 18px)}
+
+/* login */
+.login{background:linear-gradient(160deg,#1c1170 0%,#4a2ee0 50%,#8a4dff 100%);color:#fff;overflow:hidden}
+.login::before,.login::after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.08)}
+.login::before{width:360px;height:360px;right:-140px;top:-120px}
+.login::after{width:280px;height:280px;left:-120px;bottom:120px;background:rgba(255,255,255,.06)}
+.login>*{position:relative;z-index:1}
+.login-top{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 30px}
+.logo{width:68px;height:68px;border-radius:22px;background:#fff;display:grid;place-items:center;box-shadow:0 16px 34px rgba(0,0,0,.25)}
+.login h1{margin-top:28px;font-size:36px;line-height:1.1;font-weight:800;letter-spacing:-.03em}
+.login p.lead{margin-top:14px;font-size:16px;line-height:1.5;opacity:.82;max-width:300px}
+.login-bottom{background:var(--surface);color:var(--text);border-radius:32px 32px 0 0;padding:30px 26px calc(env(safe-area-inset-bottom,0px) + 28px);display:flex;flex-direction:column;align-items:center;gap:16px}
+.login-bottom h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.login-bottom small{color:var(--muted);font-size:12px;text-align:center;line-height:1.5}
+#gbtn{min-height:44px;display:flex;justify-content:center}
+.setup{display:none;background:rgba(245,165,36,.14);color:#b9770e;border-radius:14px;padding:12px 14px;font-size:12.5px;font-weight:600;line-height:1.45;text-align:left}
+@media (prefers-color-scheme:dark){.setup{color:#f5c26b}}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;padding:0 22px}
+.who{display:flex;align-items:center;gap:12px;min-width:0}
+.avatar{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-weight:800;display:grid;place-items:center;font-size:16px;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.who div{min-width:0}
+.who small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+.who b{display:block;font-size:17px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{width:44px;height:44px;border-radius:16px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;position:relative;flex:none}
+.iconbtn .dot{position:absolute;top:11px;right:12px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--surface)}
+
+/* card */
+.card{margin:22px 20px 0;border-radius:28px;padding:22px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(140deg,#3a22d6 0%,#6a3cf7 55%,#9a52ff 100%);box-shadow:0 18px 36px rgba(91,61,245,.35)}
+.card::before,.card::after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.09)}
+.card::before{width:220px;height:220px;right:-70px;top:-90px}
+.card::after{width:160px;height:160px;right:30px;bottom:-110px;background:rgba(255,255,255,.07)}
+.card>*{position:relative;z-index:1}
+.card-top{display:flex;justify-content:space-between;align-items:center}
+.bank{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.bank i{width:34px;height:34px;border-radius:11px;background:#fff;display:grid;place-items:center;font-style:normal;font-weight:800;color:var(--brand);font-size:14px}
+.chip{font-size:11px;font-weight:600;background:rgba(255,255,255,.18);padding:6px 10px;border-radius:20px;display:flex;gap:6px;align-items:center}
+.bal-label{margin-top:26px;font-size:12px;opacity:.75;font-weight:500}
+.bal{display:flex;align-items:baseline;gap:8px;margin-top:4px;font-size:34px;font-weight:800}
+.bal span{letter-spacing:.18em}
+.upiid{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;opacity:.92}
+.upiid code{font-family:inherit;font-weight:700;word-break:break-all}
+.cta{margin-top:18px;width:100%;height:50px;border-radius:16px;background:#fff;color:var(--brand);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s}
+.cta:active{transform:scale(.97)}
+
+.section{padding:0 22px;margin-top:28px}
+.section h3{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.section h3 a{font-size:13px;color:var(--brand);font-weight:600;text-decoration:none}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.act{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11.5px;font-weight:600;text-align:center}
+.act .ic{width:58px;height:58px;border-radius:20px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;color:var(--brand);transition:transform .15s}
+.act:active .ic{transform:scale(.92)}
+.people{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;margin:0 -22px;padding:0 22px}
+.people::-webkit-scrollbar{display:none}
+.person{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;font-weight:600;min-width:58px}
+.person .p{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:17px;color:#fff}
+.list{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:4px 16px}
+.txn{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.txn:last-child{border-bottom:0}
+.txn .p{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;font-weight:800;color:#fff;font-size:15px;flex:none}
+.txn .m{flex:1;min-width:0}
+.txn .m b{display:block;font-size:14.5px;font-weight:700}
+.txn .m small{color:var(--muted);font-size:12px}
+.txn .amt{font-weight:800;font-size:15px;text-align:right}
+.txn .amt.in{color:var(--green)}
+.txn .amt small{display:block;font-weight:500;font-size:11px;color:var(--muted);margin-top:2px}
+
+.nav{position:absolute;left:0;right:0;bottom:0;padding:10px 22px calc(env(safe-area-inset-bottom,0px) + 14px);background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;z-index:20}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--muted);width:64px}
+.nav button.on{color:var(--brand)}
+.nav .scan{width:62px;height:62px;border-radius:22px;margin-top:-34px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:grid;place-items:center;box-shadow:0 12px 26px rgba(91,61,245,.45);border:4px solid var(--bg)}
+
+/* PIN */
+.pin-head{display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+.pin-body{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 24px 0}
+.pin-bank{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);padding:12px 16px;border-radius:20px;width:100%;margin-top:16px}
+.pin-bank i{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:grid;place-items:center;font-weight:800;font-style:normal}
+.pin-bank b{display:block;font-size:14.5px}
+.pin-bank small{color:var(--muted);font-size:12px}
+.pin-title{margin-top:30px;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.pin-sub{margin-top:6px;color:var(--muted);font-size:13.5px;text-align:center;line-height:1.45}
+.dots{display:flex;gap:18px;margin:26px 0 10px}
+.dots span{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);background:var(--surface);transition:all .15s}
+.dots span.f{background:var(--brand);border-color:var(--brand);transform:scale(1.1)}
+.dots.err span{border-color:var(--red);background:var(--red)}
+.dots.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+.err-msg{height:18px;font-size:13px;color:var(--red);font-weight:600}
+.pad{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:auto;padding:0 6px 14px}
+.key{height:60px;border-radius:20px;font-size:25px;font-weight:700;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;transition:transform .1s,background .1s}
+.key:active{transform:scale(.94);background:var(--surface2)}
+.key.plain{background:none;border-color:transparent}
+.submit{margin:0 6px calc(env(safe-area-inset-bottom,0px) + 20px);width:calc(100% - 12px);height:56px;border-radius:18px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-weight:800;font-size:16px;box-shadow:0 12px 24px rgba(91,61,245,.35);transition:opacity .2s,transform .15s}
+.submit:disabled{opacity:.35;box-shadow:none;cursor:not-allowed}
+.submit:not(:disabled):active{transform:scale(.98)}
+.secure{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);font-weight:600}
+
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:30px;text-align:center}
+.ring{width:84px;height:84px;border-radius:50%;border:6px solid var(--surface2);border-top-color:var(--brand);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.center h2{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.center p{color:var(--muted);font-size:14px;margin-top:-10px}
+
+/* PDF */
+.pdf-head{display:flex;align-items:center;gap:12px;padding:0 18px 12px}
+.pdf-head h2{font-size:18px;font-weight:800;letter-spacing:-.01em;flex:1}
+.pdf-wrap{flex:1;margin:0 14px;border-radius:22px;overflow:hidden;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column}
+.pdf-wrap iframe{flex:1;width:100%;border:0;background:#fff}
+.pdf-actions{display:flex;gap:10px;padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 18px)}
+.btn{flex:1;height:52px;border-radius:16px;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.pri{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+.btn.sec{background:var(--surface);border:1px solid var(--border)}
+
+/* profile sheet */
+.sheet-bg{position:absolute;inset:0;background:rgba(10,8,25,.55);z-index:80;display:none;align-items:flex-end}
+.sheet-bg.open{display:flex}
+.sheet{width:100%;background:var(--surface);border-radius:28px 28px 0 0;padding:14px 24px calc(env(safe-area-inset-bottom,0px) + 24px);animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.grab{width:42px;height:5px;border-radius:3px;background:var(--border);margin:0 auto 20px}
+.sheet .avatar{width:64px;height:64px;border-radius:22px;font-size:22px}
+.sheet h4{margin-top:14px;font-size:20px;font-weight:800;letter-spacing:-.01em}
+.sheet .em{color:var(--muted);font-size:13.5px;margin-top:2px;word-break:break-all}
+.sheet .row{margin-top:18px;padding:14px 16px;border-radius:16px;background:var(--bg);font-size:13px;color:var(--muted)}
+.sheet .row b{display:block;color:var(--text);font-size:14.5px;margin-top:2px;word-break:break-all}
+.signout{margin-top:18px;width:100%;height:52px;border-radius:16px;background:rgba(240,68,56,.12);color:var(--red);font-weight:800;font-size:15px}
+
+.toast{position:absolute;left:50%;bottom:110px;transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:14px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;z-index:100;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:focus-visible{outline:3px solid var(--brand2);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- LOGIN -->
+  <section class="screen login active" id="login">
+    <div class="login-top">
+      <div class="logo">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#5b3df5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2.5-4 5-4 7.5 0s5 4 7.5 0"/><path d="M3 18c2.5-4 5-4 7.5 0s5 4 7.5 0" opacity=".5"/><path d="M3 6c2.5-4 5-4 7.5 0s5 4 7.5 0" opacity=".5"/></svg>
+      </div>
+      <h1>Pay anyone,<br>instantly.</h1>
+      <p class="lead">Send money, scan to pay and check your bank balance in seconds.</p>
+    </div>
+    <div class="login-bottom">
+      <h2>Get started</h2>
+      <div id="gbtn"></div>
+      <div class="setup" id="setup">Google sign-in is not set up yet. Add your Google Client ID to GOOGLE_CLIENT_ID in index.html.</div>
+      <small>By continuing you agree to the Terms of Use and Privacy Policy.</small>
+    </div>
+  </section>
+
+  <!-- HOME -->
+  <section class="screen" id="home">
+    <div class="scroll safe-top">
+      <div class="top">
+        <button class="who" id="openProfile" aria-label="Open profile">
+          <div class="avatar" id="avatar">?</div>
+          <div style="text-align:left"><small id="greet">Good evening</small><b id="uname">Member</b></div>
+        </button>
+        <button class="iconbtn" id="bell" aria-label="Notifications">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="dot"></span>
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="bank"><i>H</i> Horizon Bank</div>
+          <div class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> UPI linked</div>
+        </div>
+        <div class="bal-label">Savings account ending 4521</div>
+        <div class="bal"><b>₹</b><span>••••••</span></div>
+        <div class="upiid"><span>UPI ID: <code id="upiId">member@horizon</code></span>
+          <button aria-label="Copy UPI ID" id="copyBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        </div>
+        <button class="cta" id="checkBal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          Check balance
+        </button>
+      </div>
+
+      <div class="section">
+        <div class="actions">
+          <button class="act"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="13" width="3" height="3"/><path d="M13 8h3M8 13h3"/></svg></span>Scan QR</button>
+          <button class="act"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span>Pay contact</button>
+          <button class="act"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M19 21V10M9 21V10M15 21V10M2 10l10-7 10 7"/></svg></span>To bank</button>
+          <button class="act"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span>Recharge</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>People <a href="#" onclick="return false">See all</a></h3>
+        <div class="people">
+          <div class="person"><div class="p" style="background:#e5484d">RK</div>Riya</div>
+          <div class="person"><div class="p" style="background:#12a594">MP</div>Mom</div>
+          <div class="person"><div class="p" style="background:#f5a524">VJ</div>Vikram</div>
+          <div class="person"><div class="p" style="background:#3e63dd">NS</div>Neha</div>
+          <div class="person"><div class="p" style="background:#8e4ec6">KD</div>Karan</div>
+          <div class="person"><div class="p" style="background:#d6409f">PA</div>Pooja</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Recent activity <a href="#" onclick="return false">History</a></h3>
+        <div class="list">
+          <div class="txn"><div class="p" style="background:#12a594">SB</div><div class="m"><b>Starbucks Coffee</b><small>Today, 6:42 PM</small></div><div class="amt">- ₹420<small>Paid</small></div></div>
+          <div class="txn"><div class="p" style="background:#e5484d">RK</div><div class="m"><b>Riya Kapoor</b><small>Today, 1:15 PM</small></div><div class="amt in">+ ₹1,500<small>Received</small></div></div>
+          <div class="txn"><div class="p" style="background:#3e63dd">BE</div><div class="m"><b>BESCOM Electricity</b><small>Yesterday</small></div><div class="amt">- ₹2,184<small>Bill paid</small></div></div>
+          <div class="txn"><div class="p" style="background:#8e4ec6">ZM</div><div class="m"><b>Zomato</b><small>Mon, 9:10 PM</small></div><div class="amt">- ₹649<small>Paid</small></div></div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Primary">
+      <button class="on"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.6 2.5 10.5a1 1 0 0 0-.4.8V20a2 2 0 0 0 2 2H9v-6h6v6h4.9a2 2 0 0 0 2-2v-8.7a1 1 0 0 0-.4-.8Z"/></svg>Home</button>
+      <button class="scan" aria-label="Scan to pay"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg></button>
+      <button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>History</button>
+    </nav>
+  </section>
+
+  <!-- PIN -->
+  <section class="screen" id="pin">
+    <div class="safe-top"></div>
+    <div class="pin-head">
+      <button class="iconbtn" id="pinBack" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <div class="secure"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secured by NPCI</div>
+    </div>
+    <div class="pin-body">
+      <div class="pin-bank"><i>H</i><div><b>Horizon Bank</b><small>Savings account ending 4521</small></div></div>
+      <div class="pin-title">Enter UPI PIN</div>
+      <div class="pin-sub">Enter your 4-digit UPI PIN to check your account balance</div>
+      <div class="dots" id="dots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
+      <div class="err-msg" id="errMsg"></div>
+      <div class="pad" id="pad">
+        <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+        <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+        <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+        <button class="key plain" id="forgot" style="font-size:13px;color:var(--brand)">Forgot PIN?</button>
+        <button class="key" data-k="0">0</button>
+        <button class="key plain" data-k="del" aria-label="Delete"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/><path d="m18 9-6 6M12 9l6 6"/></svg></button>
+      </div>
+      <button class="submit" id="submit" disabled>Submit</button>
+    </div>
+  </section>
+
+  <!-- LOADING -->
+  <section class="screen" id="loading">
+    <div class="center">
+      <div class="ring"></div>
+      <h2>Checking balance</h2>
+      <p>Talking securely to Horizon Bank</p>
+    </div>
+  </section>
+
+  <!-- PDF -->
+  <section class="screen" id="pdf">
+    <div class="safe-top"></div>
+    <div class="pdf-head">
+      <button class="iconbtn" id="pdfBack" aria-label="Back to home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <h2>Balance statement</h2>
+      <div class="chip" style="background:rgba(18,183,106,.14);color:var(--green)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Verified</div>
+    </div>
+    <div class="pdf-wrap"><iframe id="pdfFrame" title="Balance statement PDF"></iframe></div>
+    <div class="pdf-actions">
+      <button class="btn sec" id="pdfBackBtn">Done</button>
+      <button class="btn pri" id="pdfOpen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>Open PDF</button>
+    </div>
+  </section>
+
+  <!-- PROFILE SHEET -->
+  <div class="sheet-bg" id="sheetBg">
+    <div class="sheet" role="dialog" aria-label="Profile">
+      <div class="grab"></div>
+      <div class="avatar" id="sheetAvatar">?</div>
+      <h4 id="sheetName">Member</h4>
+      <div class="em" id="sheetEmail"></div>
+      <div class="row">UPI ID<b id="sheetUpi"></b></div>
+      <button class="signout" id="signout">Sign out</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG
+   1. GOOGLE_CLIENT_ID: create a "Web application" OAuth client at
+      https://console.cloud.google.com/apis/credentials
+      and add your GitHub Pages URL (for example
+      https://yourname.github.io) under "Authorized JavaScript origins".
+   2. PDF_URL: link or path of your PDF (for example "statement.pdf").
+      While empty, a built-in placeholder PDF is shown.
+   ============================================================ */
+var GOOGLE_CLIENT_ID = "YOUR_CLIENT_ID.apps.googleusercontent.com";
+var PDF_URL = "";
+var UPI_PIN = "1234";
+var UPI_HANDLE = "@horizon";
+
+var $ = function (id) { return document.getElementById(id); };
+var user = null, pin = "", busy = false;
+
+function show(id) {
+  var s = document.querySelectorAll(".screen");
+  for (var i = 0; i < s.length; i++) s[i].classList.remove("active");
+  $(id).classList.add("active");
+}
+function toast(msg) {
+  var t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function () { t.classList.remove("show"); }, 1800);
+}
+
+/* ---------- storage (safe) ---------- */
+function saveUser(u) { try { localStorage.setItem("pw_user", JSON.stringify(u)); } catch (e) {} }
+function loadUser() { try { return JSON.parse(localStorage.getItem("pw_user")); } catch (e) { return null; } }
+function clearUser() { try { localStorage.removeItem("pw_user"); } catch (e) {} }
+
+/* ---------- user helpers ---------- */
+function initials(name) {
+  var p = String(name || "?").trim().split(/\s+/);
+  var s = p[0].charAt(0) + (p.length > 1 ? p[p.length - 1].charAt(0) : "");
+  return s.toUpperCase();
+}
+function makeUpiId(u) {
+  var local = String(u.email || u.name || "member").split("@")[0].toLowerCase().replace(/[^a-z0-9.]/g, "");
+  return (local || "member") + UPI_HANDLE;
+}
+function setAvatar(el, u) {
+  el.textContent = "";
+  if (u.picture) {
+    var img = new Image();
+    img.referrerPolicy = "no-referrer";
+    img.alt = "";
+    img.onerror = function () { el.textContent = initials(u.name); };
+    img.src = u.picture;
+    el.appendChild(img);
+  } else {
+    el.textContent = initials(u.name);
+  }
+}
+function greeting() {
+  var h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Good morning";
+  if (h >= 12 && h < 17) return "Good afternoon";
+  if (h >= 17 && h < 22) return "Good evening";
+  return "Good night";
+}
+function updateGreeting() { $("greet").textContent = greeting(); }
+setInterval(updateGreeting, 60000);
+
+function applyUser(u) {
+  user = u;
+  var upi = makeUpiId(u);
+  $("uname").textContent = u.name || "Member";
+  $("upiId").textContent = upi;
+  $("sheetName").textContent = u.name || "Member";
+  $("sheetEmail").textContent = u.email || "";
+  $("sheetUpi").textContent = upi;
+  setAvatar($("avatar"), u);
+  setAvatar($("sheetAvatar"), u);
+  updateGreeting();
+}
+
+/* ---------- Google sign-in ---------- */
+function parseJwt(t) {
+  var b = t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+  var json = decodeURIComponent(atob(b).split("").map(function (c) {
+    return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(""));
+  return JSON.parse(json);
+}
+function onCredential(resp) {
+  try {
+    var p = parseJwt(resp.credential);
+    var u = { name: p.name || p.given_name || "Member", email: p.email || "", picture: p.picture || "" };
+    saveUser(u);
+    applyUser(u);
+    show("home");
+  } catch (e) {
+    toast("Sign-in failed. Please try again.");
+  }
+}
+function initGoogle() {
+  if (!window.google || !google.accounts || GOOGLE_CLIENT_ID.indexOf("YOUR_CLIENT_ID") === 0) {
+    $("setup").style.display = "block";
+    return;
+  }
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onCredential, auto_select: false });
+  google.accounts.id.renderButton($("gbtn"), {
+    theme: "filled_blue", size: "large", shape: "pill", text: "continue_with", logo_alignment: "left", width: 300
+  });
+}
+$("signout").addEventListener("click", function () {
+  clearUser();
+  user = null;
+  try { if (window.google && google.accounts) google.accounts.id.disableAutoSelect(); } catch (e) {}
+  $("sheetBg").classList.remove("open");
+  resetPin();
+  show("login");
+});
+
+/* ---------- profile sheet ---------- */
+$("openProfile").addEventListener("click", function () { $("sheetBg").classList.add("open"); });
+$("sheetBg").addEventListener("click", function (e) { if (e.target === $("sheetBg")) $("sheetBg").classList.remove("open"); });
+
+/* ---------- PIN ---------- */
+function renderDots() {
+  var spans = $("dots").children;
+  for (var i = 0; i < 4; i++) spans[i].classList.toggle("f", i < pin.length);
+  $("submit").disabled = pin.length !== 4;
+}
+function resetPin() {
+  pin = "";
+  $("dots").classList.remove("err", "shake");
+  $("errMsg").textContent = "";
+  renderDots();
+}
+function press(k) {
+  if (busy) return;
+  $("errMsg").textContent = "";
+  $("dots").classList.remove("err");
+  if (k === "del") pin = pin.slice(0, -1);
+  else if (pin.length < 4) pin += k;
+  renderDots();
+}
+
+/* placeholder PDF built at runtime */
+var _blobUrl = null;
+function placeholderPdfUrl() {
+  if (_blobUrl) return _blobUrl;
+  var objs = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>",
+    null,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>"
+  ];
+  var stream =
+    "0.357 0.239 0.961 rg 0 742 595 100 re f\n" +
+    "BT /F2 28 Tf 1 1 1 rg 50 780 Td (Balance Statement) Tj ET\n" +
+    "BT /F1 12 Tf 1 1 1 rg 50 756 Td (Horizon Bank - Savings account ending 4521) Tj ET\n" +
+    "BT /F2 16 Tf 0.08 0.07 0.17 rg 50 680 Td (Placeholder PDF) Tj ET\n" +
+    "BT /F1 12 Tf 0.4 0.4 0.5 rg 50 655 Td (Replace PDF_URL in index.html with your own PDF file.) Tj ET";
+  objs[3] = "<< /Length " + stream.length + " >>\nstream\n" + stream + "\nendstream";
+  var out = "%PDF-1.4\n", offs = [];
+  for (var i = 0; i < objs.length; i++) {
+    offs.push(out.length);
+    out += (i + 1) + " 0 obj\n" + objs[i] + "\nendobj\n";
+  }
+  var xref = out.length;
+  out += "xref\n0 " + (objs.length + 1) + "\n0000000000 65535 f \n";
+  for (var j = 0; j < offs.length; j++) out += ("0000000000" + offs[j]).slice(-10) + " 00000 n \n";
+  out += "trailer\n<< /Size " + (objs.length + 1) + " /Root 1 0 R >>\nstartxref\n" + xref + "\n%%EOF";
+  _blobUrl = URL.createObjectURL(new Blob([out], { type: "application/pdf" }));
+  return _blobUrl;
+}
+function pdfSource() { return PDF_URL || placeholderPdfUrl(); }
+
+function submitPin() {
+  if (pin.length !== 4 || busy) return;
+  if (pin === UPI_PIN) {
+    busy = true;
+    show("loading");
+    setTimeout(function () {
+      $("pdfFrame").src = pdfSource();
+      show("pdf");
+      busy = false;
+      resetPin();
+    }, 1600);
+  } else {
+    var d = $("dots");
+    d.classList.add("err", "shake");
+    $("errMsg").textContent = "Incorrect UPI PIN. Try again.";
+    if (navigator.vibrate) { try { navigator.vibrate(120); } catch (e) {} }
+    setTimeout(function () { pin = ""; d.classList.remove("shake"); renderDots(); }, 450);
+  }
+}
+
+$("pad").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-k]");
+  if (b) press(b.getAttribute("data-k"));
+});
+$("submit").addEventListener("click", submitPin);
+$("checkBal").addEventListener("click", function () { resetPin(); show("pin"); });
+$("pinBack").addEventListener("click", function () { resetPin(); show("home"); });
+$("forgot").addEventListener("click", function () { toast("Reset your PIN with your debit card"); });
+$("copyBtn").addEventListener("click", function () {
+  try { navigator.clipboard.writeText($("upiId").textContent); } catch (e) {}
+  toast("UPI ID copied");
+});
+$("pdfBack").addEventListener("click", function () { show("home"); });
+$("pdfBackBtn").addEventListener("click", function () { show("home"); });
+$("pdfOpen").addEventListener("click", function () { window.open(pdfSource(), "_blank"); });
+
+document.addEventListener("keydown", function (e) {
+  if (!$("pin").classList.contains("active")) return;
+  if (/^[0-9]$/.test(e.key)) press(e.key);
+  else if (e.key === "Backspace") press("del");
+  else if (e.key === "Enter") submitPin();
+});
+
+var quick = document.querySelectorAll(".act, .nav button:not(.on), #bell");
+for (var q = 0; q < quick.length; q++) {
+  quick[q].addEventListener("click", function () { toast("Coming soon"); });
+}
+
+/* ---------- boot ---------- */
+var saved = loadUser();
+if (saved) { applyUser(saved); show("home"); } else { show("login"); }
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer onload="initGoogle()"></script>
+</body>
+</html>
